@@ -42,9 +42,16 @@
 
         <Style x:Key="ThingToDoBorder" TargetType="Border">
             <Setter Property="BorderBrush" Value="DeepSkyBlue"/>
-            <Setter Property="BorderThickness" Value="10"/>
+            <Setter Property="BorderThickness" Value="20"/>
             <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+
+        <Style x:Key="InputBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="Gray"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="4"/>
         </Style>
 
         <Style x:Key="ThingToDoGrid" TargetType="Grid">
@@ -53,8 +60,44 @@
             <Setter Property="Height" Value="300"/>
             <Setter Property="Background" Value="DeepSkyBlue"/>
         </Style>
+
+        <Style x:Key="PlusButton" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Canvas Height="100" Width="100">
+                            <Border Height="20" Width="100" CornerRadius="5" BorderBrush="Black" BorderThickness="10" Canvas.Top="40"/>
+
+                            <Border Height="100" Width="20" CornerRadius="5" BorderBrush="Black" BorderThickness="10" Canvas.Left="40"/>
+                        </Canvas>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="XButton" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Canvas Height="20" Width="20" HorizontalAlignment="Left" VerticalAlignment="Top">
+                            <Border Height="20" Width="6" CornerRadius="3" BorderBrush="Black" BorderThickness="3" Canvas.Top="1" Canvas.Left="1">
+                                <Border.LayoutTransform>
+                                    <RotateTransform Angle="135"/>
+                                </Border.LayoutTransform>
+                            </Border>
+
+                            <Border Height="20" Width="6" CornerRadius="3" BorderBrush="Black" BorderThickness="3" Canvas.Left="1" Canvas.Top="1">
+                                <Border.LayoutTransform>
+                                    <RotateTransform Angle="45"/>
+                                </Border.LayoutTransform>
+                            </Border>
+                        </Canvas>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
-    
+
     <Grid Margin="10px">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10*"/>
@@ -67,9 +110,9 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
-            <Button x:Name="ToDoList" Grid.Row="0" Style="{StaticResource StyleForButton}" Click="Button_Click" Content="To do List"/>
-            <Button Grid.Row="1" Style="{StaticResource StyleForButton}" Click="Button_Click" Content="Say Hello"/>
-            <Button Grid.Row="2" Style="{StaticResource StyleForButton}" Click="Button_Click" Content="Say Hola"/>
+            <Button x:Name="ToDoList" Grid.Row="0" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="To do List"/>
+            <Button x:Name="SayHello" Grid.Row="1" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hello"/>
+            <Button Grid.Row="2" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hola"/>
         </Grid>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
