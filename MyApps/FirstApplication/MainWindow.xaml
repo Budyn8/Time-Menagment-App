@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FirstApplication"
         mc:Ignorable="d"
-        Title="MyFirstAppInC#" Height="600" Width="1000">
+        Title="MainWindow" Height="600" Width="1000">
     <Window.Resources>
         <Style x:Key="StyleForButton" TargetType="Button">
             <Setter Property="BorderThickness" Value="0"/>
@@ -41,7 +41,6 @@
         </Style>
 
         <Style x:Key="ThingToDoBorder" TargetType="Border">
-            <Setter Property="BorderBrush" Value="DeepSkyBlue"/>
             <Setter Property="BorderThickness" Value="20"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Margin" Value="8"/>
@@ -55,10 +54,8 @@
         </Style>
 
         <Style x:Key="ThingToDoGrid" TargetType="Grid">
-            <Setter Property="MinWidth" Value="300"/>
-            <Setter Property="MaxWidth" Value="800"/>
+            <Setter Property="Width" Value="300"/>
             <Setter Property="Height" Value="300"/>
-            <Setter Property="Background" Value="DeepSkyBlue"/>
         </Style>
 
         <Style x:Key="PlusButton" TargetType="Button">
@@ -111,7 +108,7 @@
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Button x:Name="ToDoList" Grid.Row="0" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="To do List"/>
-            <Button x:Name="SayHello" Grid.Row="1" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hello"/>
+            <Button x:Name="AppsThatRun" Grid.Row="1" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hello"/>
             <Button Grid.Row="2" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hola"/>
         </Grid>
         <Grid Grid.Column="1">

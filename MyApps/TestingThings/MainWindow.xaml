@@ -5,8 +5,164 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TestingThings"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <WrapPanel>
-        
-    </WrapPanel>
+        Title="MainWindow" Height="600" Width="1000">
+    <Window.Resources>
+        <Style x:Key="StyleForButton" TargetType="Button">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="5px"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontWeight" Value="DemiBold"/>
+            <Setter Property="FontFamily" Value="Cyrillic"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="DarkGray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="8"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+        <Style x:Key="ThingToDoBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="DeepSkyBlue"/>
+            <Setter Property="BorderThickness" Value="20"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+
+        <Style x:Key="InputBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="Gray"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+
+        <Style x:Key="ThingToDoGrid" TargetType="Grid">
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="Height" Value="300"/>
+            <Setter Property="Background" Value="DeepSkyBlue"/>
+        </Style>
+
+        <Style x:Key="PlusButton" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Canvas Height="100" Width="100">
+                            <Border Height="20" Width="100" CornerRadius="5" BorderBrush="Black" BorderThickness="10" Canvas.Top="40"/>
+
+                            <Border Height="100" Width="20" CornerRadius="5" BorderBrush="Black" BorderThickness="10" Canvas.Left="40"/>
+                        </Canvas>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="XButton" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Canvas Height="20" Width="20" HorizontalAlignment="Left" VerticalAlignment="Top">
+                            <Border Height="20" Width="6" CornerRadius="3" BorderBrush="Black" BorderThickness="3" Canvas.Top="1" Canvas.Left="1">
+                                <Border.LayoutTransform>
+                                    <RotateTransform Angle="135"/>
+                                </Border.LayoutTransform>
+                            </Border>
+
+                            <Border Height="20" Width="6" CornerRadius="3" BorderBrush="Black" BorderThickness="3" Canvas.Left="1" Canvas.Top="1">
+                                <Border.LayoutTransform>
+                                    <RotateTransform Angle="45"/>
+                                </Border.LayoutTransform>
+                            </Border>
+                        </Canvas>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Margin="10px">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="40*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Button x:Name="ToDoList" Grid.Row="0" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="To do List"/>
+            <Button x:Name="SayHello" Grid.Row="1" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hello"/>
+            <Button Grid.Row="2" Style="{StaticResource StyleForButton}" Click="PickAnApp" Content="Say Hola"/>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="6*"/>
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="AppTitle" Grid.Row="0" FontSize="65" TextAlignment="Center" MinHeight="80" Text="Choose app that you want"/>
+            <ScrollViewer  Grid.Row="1">
+                <Grid x:Name="ThingsToDoPanel">
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+    </Grid>
+    <!-- <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="9*"/>
+        </Grid.RowDefinitions>
+    
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="0" Click="Button_Click">Show</Button>
+        <Button Grid.Column="1">Hide</Button>
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2">
+            <WrapPanel x:Name="main">
+                <Border x:Name="id1" Height="100" Width="100" Margin="20" BorderBrush="Aqua" BorderThickness="3" CornerRadius="10">
+                    <Grid Background="Aqua">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="3*"/>
+                            <RowDefinition Height="4*"/>
+                            <RowDefinition Height="13*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="8*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="buttonid1" Style="{StaticResource XButton}" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" FontSize="10" FontWeight="Bold" TextAlignment="Left">Do until:</TextBlock>
+                        </Grid>
+                        <TextBlock Grid.Row="1" FontSize="15" FontWeight="Heavy" TextAlignment="Center">Title</TextBlock>
+                        <TextBlock Grid.Row="2" FontSize="10" TextWrapping="Wrap">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</TextBlock>
+                    </Grid>
+                </Border>
+            </WrapPanel>
+        </ScrollViewer>
+    </Grid>
+    -->
 </Window>

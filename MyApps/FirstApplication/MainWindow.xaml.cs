@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.DirectoryServices;
+using System.IO;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
@@ -23,25 +26,10 @@ namespace FirstApplication
     /// </summary>
     public partial class MainWindow : Window
     {
-        public class todoObject
-        {
-            public todoObject(string title, string text, string date)
-            {
-                this.title = title;
-                this.text = text;
-                this.date = date;
-            }
-
-            public string title { get; set; }
-            public string text { get; set; }
-            public string date { get; set; }
-
-        }
-
         public MainWindow()
         {
             var LocalStorage = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            LocalStorage = System.IO.Path.Combine( LocalStorage, "ToDoApp");
+            LocalStorage = System.IO.Path.Combine(LocalStorage, "ToDoApp");
             if (!Directory.Exists(LocalStorage))
             {
                 Directory.CreateDirectory(LocalStorage);
@@ -54,398 +42,404 @@ namespace FirstApplication
             InitializeComponent();
         }
 
-        private void PickAnApp(object sender, RoutedEventArgs e)
+        public class TodoObject(string title, string text, string date)
         {
-            
-            object titleBlock = FindName("AppTitle");
-            object appContainer = FindName("ThingsToDoPanel");
-            (appContainer as Grid).Children.Clear();
+            public string Title { get; set; } = title;
+            public string Text { get; set; } = text;
+            public string Date { get; set; } = date;
 
-
-            switch ((sender as Button).Name.ToString()){
-                case "ToDoList":
-
-                    WrapPanel mainPanel = new WrapPanel();
-                    (appContainer as Grid).Children.Add(mainPanel);
-
-                    (titleBlock as TextBlock).Text = "To do list";
-
-                    string storageFile = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\ToDoApp\\storage.json";
-                    string fileText = File.ReadAllText(storageFile);
-                    todoObject[] toDo = JsonSerializer.Deserialize<todoObject[]>(fileText);
-
-                    for (int i = 0; i < toDo.Length; i++)
-                    {
-                        CreateToDoNode(mainPanel, toDo[i].title, toDo[i].text, toDo[i].date, i);
-                    }
-
-                    Border AddTaskNode = new Border();
-                    AddTaskNode.Style = (Style)Resources["ThingToDoBorder"];
-
-                    mainPanel.Children.Add(AddTaskNode);
-
-                    Grid AddTaskGrid = new Grid();
-                    AddTaskGrid.Style = (Style)Resources["ThingToDoGrid"];
-
-                    AddTaskNode.Child = AddTaskGrid;
-
-                    Button addTask = new Button();
-                    addTask.Style = (Style)Resources["PlusButton"];
-                    addTask.Click += AddTask;
-
-                    AddTaskGrid.Children.Add(addTask);
-
-                    break;
-                default:
-                    (titleBlock as TextBlock).Text = "Jeszcze Nie dodaliśmy tej aplikacji";
-                    break;
-            }
-
-        }
-
-        public void AddTask(object sender, EventArgs e) {
-
-            Grid AddTaskGrid = ((sender as Button).Parent as Grid);
-            AddTaskGrid.Children.Clear();
-
-            AddTaskGrid.Style = (Style)Resources["ThingToDoGrid"];
-
-
-            RowDefinition firstRowDefinition = new RowDefinition();
-            firstRowDefinition.Height = new GridLength(3, GridUnitType.Star);
-
-            RowDefinition secondRowDefinition = new RowDefinition();
-            secondRowDefinition.Height = new GridLength(12, GridUnitType.Star);
-
-            RowDefinition thirdRowDefinition = new RowDefinition();
-            thirdRowDefinition.Height = new GridLength(3, GridUnitType.Star);
-
-            RowDefinition fourthRowDefinition = new RowDefinition();
-            fourthRowDefinition.Height = new GridLength(2, GridUnitType.Star);
-
-            AddTaskGrid.RowDefinitions.Add(firstRowDefinition);
-            AddTaskGrid.RowDefinitions.Add(secondRowDefinition);
-            AddTaskGrid.RowDefinitions.Add(thirdRowDefinition);
-            AddTaskGrid.RowDefinitions.Add(fourthRowDefinition);
-
-            Border titleBorder = new Border();
-            Grid.SetRow(titleBorder, 0);
-            titleBorder.Style = (Style)Resources["InputBorder"];
-
-            AddTaskGrid.Children.Add(titleBorder);
-
-            TextBox titleInput = new TextBox();
-            titleInput.FontSize = 20;
-            titleInput.FontWeight = FontWeights.Heavy;
-            titleInput.TextAlignment = TextAlignment.Center;
-
-            titleBorder.Child = titleInput;
-
-            Border textBorder = new Border();
-            Grid.SetRow(textBorder, 1);
-            textBorder.Style = (Style)Resources["InputBorder"];
-
-            AddTaskGrid.Children.Add(textBorder);
-
-            TextBox textInput = new TextBox();
-            textInput.FontSize = 20;
-            textInput.TextWrapping = TextWrapping.Wrap;
-            textInput.TextAlignment = TextAlignment.Center;
-
-            textBorder.Child = textInput;
-
-            DatePicker datePicker = new DatePicker();
-            Grid.SetRow(datePicker, 2);
-
-            AddTaskGrid.Children.Add(datePicker);
-
-            Grid buttonGrid = new Grid();
-            Grid.SetRow(buttonGrid, 3);
-
-            ColumnDefinition leftColumns = new ColumnDefinition();
-            leftColumns.Width = new GridLength(1, GridUnitType.Star);
-
-            ColumnDefinition rightColumns = new ColumnDefinition();
-            rightColumns.Width = new GridLength(1, GridUnitType.Star);
-
-            buttonGrid.ColumnDefinitions.Add(leftColumns);
-            buttonGrid.ColumnDefinitions.Add(rightColumns);
-
-            AddTaskGrid.Children.Add(buttonGrid);
-
-            void Cancel(object sender, EventArgs e)
-            {
-                AddTaskGrid.Children.Clear();
-                AddTaskGrid.RowDefinitions.Clear();
-
-                Button addTask = new Button();
-                addTask.Style = (Style)Resources["PlusButton"];
-                addTask.Click += AddTask;
-
-                AddTaskGrid.Children.Add(addTask);
-            }
-
-            Button cancelButton = new Button();
-            Grid.SetColumn(cancelButton, 0);
-            cancelButton.Content = "Cancel";
-            cancelButton.Margin = new Thickness(4);
-            cancelButton.Click += Cancel;
-
-            void Save(object sender, EventArgs e)
-            {
-                string saveTitle = titleInput.Text;
-                string saveText = textInput.Text;
-                string saveDate = datePicker.Text;
-
-                todoObject saveObject = new todoObject(title: saveTitle, text: saveText, date: saveDate);
-
-                string storageFile = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\ToDoApp\\storage.json";
-                string fileText = File.ReadAllText(storageFile);
-                todoObject[] toDo = JsonSerializer.Deserialize<todoObject[]>(fileText);
-
-                int id = toDo.Length;
-
-                toDo = toDo.Append(saveObject).ToArray();
-
-                File.WriteAllText(storageFile, JsonSerializer.Serialize(toDo));
-
-                Border AddTaskNode = AddTaskGrid.Parent as Border;
-                WrapPanel mainPanel = AddTaskNode.Parent as WrapPanel;
-                mainPanel.Children.Remove(AddTaskNode);
-                CreateToDoNode(mainPanel, saveTitle, saveText, saveDate, id);
-
-                AddTaskNode = new Border();
-                AddTaskNode.Style = (Style)Resources["ThingToDoBorder"];
-
-                mainPanel.Children.Add(AddTaskNode);
-
-                AddTaskGrid = new Grid();
-                AddTaskGrid.Style = (Style)Resources["ThingToDoGrid"];
-
-                AddTaskNode.Child = AddTaskGrid;
-
-                Button addTask = new Button();
-                addTask.Style = (Style)Resources["PlusButton"];
-                addTask.Click += AddTask;
-
-                AddTaskGrid.Children.Add(addTask);
-            }
-
-            Button saveButton = new Button();
-            Grid.SetColumn(saveButton, 1);
-            saveButton.Content = "Save";
-            saveButton.Margin = new Thickness(4);
-            saveButton.Click += Save;
-
-            buttonGrid.Children.Add(cancelButton);
-            buttonGrid.Children.Add(saveButton);
-
-        }
-
-        public void DeleteNode(object sender, EventArgs e)
-        {
-
-            int id = int.Parse((sender as Button).Name.Split("id")[1]);
-
-            string storageFile = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\ToDoApp\\storage.json";
-            string fileText = File.ReadAllText(storageFile);
-            List<todoObject> toDo = JsonSerializer.Deserialize<todoObject[]>(fileText).ToList();
-
-            toDo.RemoveAt(id);
-            todoObject[] savetoDo = [.. toDo];
-
-            File.WriteAllText(storageFile, JsonSerializer.Serialize(savetoDo));
-
-            Border? AddTaskNode = ((sender as Button).Parent as Grid).Parent as Border;
-            WrapPanel? mainPanel = AddTaskNode?.Parent as WrapPanel;
-            mainPanel?.Children.Remove(AddTaskNode);
-
-            foreach (Border Node in mainPanel.Children)
-            {
-                if (Node == mainPanel.Children[mainPanel.Children.Count - 1]) break;
-
-                Button deleteButton = (Node.Child as Grid).Children[1] as Button;
-                int curr_id = int.Parse(deleteButton.Name.Split("id")[1]);
-
-                if (curr_id > id)
-                {
-                    deleteButton.Name = "id" + (curr_id - 1).ToString();
-                }
-            }
         }
 
         public class ToDoNode
         {
-            public ToDoNode( WrapPanel parent, string title, string text, string date, int id, ResourceDictionary resources) {
 
-                this.title = title;
-                this.text = text;
-                this.date = date;
-                this.id = id;
+            Border? Container { get; set; }
+            Button? DeleteButton { get; set; }
+            public int? Id { get; set; }
+            public string? Title { get; set; }
+            public string? Content { get; set; }
+            public string? Date { get; set; }
 
-                Border newNode = new Border();
-                newNode.Style = (Style)resources["ThingToDoBorder"];
+            public ToDoNode CreateANode(WrapPanel mainPanel, int id, string title, string content, string date, ResourceDictionary resources)
+            {
+                Id = id;
+                Title = title;
+                Content = content;
+                Date = date;
 
-                parent.Children.Add(newNode);
+                DateTime nodeDate = DateTime.Parse(Date);
+                DateTime today = DateTime.Today;
 
-                Grid newGrid = new Grid();
-                newGrid.Style = (Style)resources["ThingToDoGrid"];
+                Color backgroundColor;
 
-                newNode.Child = newGrid;
+                if (nodeDate.ToShortDateString() == today.ToShortDateString()) backgroundColor = Color.FromRgb(255, 0, 0);
+                else if (nodeDate < today) backgroundColor = Color.FromRgb(200, 200, 200);
+                else if (nodeDate > today.AddDays(7)) backgroundColor = Color.FromRgb(0, 255, 50);
+                else backgroundColor = Color.FromRgb(240, 100, 10);
 
-                RowDefinition firstRowDefinition = new RowDefinition();
-                firstRowDefinition.Height = new GridLength(3, GridUnitType.Star);
+                Container = new Border
+                {
+                    Style = (Style)resources["ThingToDoBorder"],
+                    Name = "id" + Id,
+                    BorderBrush = new SolidColorBrush(backgroundColor),
+                };
 
-                RowDefinition secondRowDefinition = new RowDefinition();
-                secondRowDefinition.Height = new GridLength(4, GridUnitType.Star);
+                DeleteButton = new Button
+                {
+                    Style = (Style)resources["XButton"],
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                DeleteButton.Click += Delete;
 
-                RowDefinition thirdRowDefinition = new RowDefinition();
-                thirdRowDefinition.Height = new GridLength(13, GridUnitType.Star);
+                TextBlock dateBlock = new()
+                {
+                    FontSize = 10,
+                    FontWeight = FontWeights.Bold,
+                    TextAlignment = TextAlignment.Right,
+                    Text = "do until: " + (date == "" ? "no date" : date)
+                };
+                Grid.SetColumn(dateBlock, 1);
 
-                newGrid.RowDefinitions.Add(firstRowDefinition);
-                newGrid.RowDefinitions.Add(secondRowDefinition);
-                newGrid.RowDefinitions.Add(thirdRowDefinition);
-
-                TextBlock dateBlock = new TextBlock();
-                Grid.SetRow(dateBlock, 0);
-                dateBlock.Text = "Do unti: " + date;
-                dateBlock.FontSize = 12;
-                dateBlock.FontWeight = FontWeights.Bold;
-                dateBlock.TextAlignment = TextAlignment.Right;
-
-                newGrid.Children.Add(dateBlock);
-
-
-                Button delete = new Button();
-                Grid.SetRow(delete, 0);
-                delete.Name = "id" + id.ToString();
-                delete.HorizontalAlignment = HorizontalAlignment.Left;
-                delete.Style = (Style)resources["XButton"];
-                delete.Click += DeleteNode;
-
-                this.delete = delete;
-
-                newGrid.Children.Add(delete);
-
-                TextBlock titleBlock = new TextBlock();
+                TextBlock titleBlock = new()
+                {
+                    FontSize = 20,
+                    FontWeight = FontWeights.Heavy,
+                    TextAlignment = TextAlignment.Center,
+                    Text = title
+                };
                 Grid.SetRow(titleBlock, 1);
-                titleBlock.Text = title;
-                titleBlock.FontSize = 20;
-                titleBlock.FontWeight = FontWeights.Heavy;
-                titleBlock.TextAlignment = TextAlignment.Center;
 
-                newGrid.Children.Add(titleBlock);
+                TextBlock contentBlock = new()
+                {
+                    FontSize = 15,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center,
+                    Text = content,
+                };
+                Grid.SetRow(contentBlock, 2);
 
-                TextBlock textBlock = new TextBlock();
-                Grid.SetRow(textBlock, 2);
-                textBlock.Text = text;
-                textBlock.FontSize = 20;
-                textBlock.TextAlignment = TextAlignment.Center;
+                Container.Child = new Grid
+                {
+                    Style = (Style)resources["ThingToDoGrid"],
+                    Background = new SolidColorBrush(backgroundColor),
+                    RowDefinitions =
+                    {
+                        new RowDefinition{ Height = new GridLength(3, GridUnitType.Star) },
+                        new RowDefinition{ Height = new GridLength(4, GridUnitType.Star) },
+                        new RowDefinition{ Height = new GridLength(13, GridUnitType.Star) },
+                    },
+                    Children =
+                    {
+                        new Grid {
+                            Margin = new Thickness(5),
+                            ColumnDefinitions = {
+                                new ColumnDefinition{ Width = new GridLength (2, GridUnitType.Star) },
+                                new ColumnDefinition{ Width = new GridLength(8, GridUnitType.Star) }
+                            },
+                            Children =
+                            {
+                                DeleteButton,
+                                dateBlock
+                            }
+                        },
+                        titleBlock,
+                        contentBlock
+                    }
+                };
 
-                newGrid.Children.Add(textBlock);
+                mainPanel.Children.Add(Container);
+                return this;
             }
 
-            private void DeleteNode(object sender, EventArgs e)
+            public ToDoNode? GetNodeFromElement(UIElement container)
             {
-                int id = int.Parse((sender as Button).Name.Split("id")[1]);
+                Container = (Border)container;
+                if (Container.Name == "addNode") return null;
+                DeleteButton = (Button)((Grid)((Grid)Container.Child).Children[0]).Children[0];
+                Id = int.Parse(Container.Name.Split("id")[1]);
+
+                UIElementCollection gridNode = ((Grid)Container.Child).Children;
+
+                Date = ((TextBlock)((Grid)gridNode[0]).Children[1]).Text;
+                Title = ((TextBlock)gridNode[1]).Text;
+                Content = ((TextBlock)gridNode[2]).Text;
+
+                return this;
+            }
+
+            private void ChangeId()
+            {
+                if (Container == null) return;
+                Id--;
+                Container.Name = "id" + Id;
+            }
+
+            private void Delete(object sender, RoutedEventArgs e)
+            {
+                if (Container == null) return;
+                WrapPanel mainPanel = (WrapPanel)Container.Parent;
+                Id = int.Parse(Container.Name.Split("id")[1]);
+                mainPanel.Children.Remove(Container);
 
                 string storageFile = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\ToDoApp\\storage.json";
                 string fileText = File.ReadAllText(storageFile);
-                List<todoObject> toDo = JsonSerializer.Deserialize<todoObject[]>(fileText).ToList();
+                List<TodoObject> toDo = [.. JsonSerializer.Deserialize<TodoObject[]>(fileText)];
 
-                toDo.RemoveAt(id);
-                todoObject[] savetoDo = [.. toDo];
+                toDo.RemoveAt(int.Parse(Container.Name.Split("id")[1]));
+                TodoObject[] savetoDo = [.. toDo];
 
                 File.WriteAllText(storageFile, JsonSerializer.Serialize(savetoDo));
 
-                Border? AddTaskNode = ((sender as Button).Parent as Grid).Parent as Border;
-                WrapPanel? mainPanel = AddTaskNode?.Parent as WrapPanel;
-                mainPanel?.Children.Remove(AddTaskNode);
-
-                foreach (Border Node in mainPanel.Children)
+                foreach (UIElement Child in mainPanel.Children)
                 {
-                    if (Node == mainPanel.Children[mainPanel.Children.Count - 1]) break;
-
-                    Button deleteButton = (Node.Child as Grid).Children[1] as Button;
-                    int curr_id = int.Parse(deleteButton.Name.Split("id")[1]);
-
-                    if (curr_id > id)
-                    {
-                        deleteButton.Name = "id" + (curr_id - 1).ToString();
-                    }
+                    ToDoNode? ToDoTask = new ToDoNode().GetNodeFromElement(Child);
+                    if (ToDoTask == null) continue;
+                    if (ToDoTask.Id >= Id) ToDoTask.ChangeId();
                 }
             }
 
-            public void setButtonId() { delete.Name = "id" + (id - 1).ToString(); }
-
-            public Button delete {  get; set; }
-            public int id { get; set; }
-            public string title { get; set; }
-            public string text { get; set; }
-            public string date { get; set; }
-
         }
 
-        private void CreateToDoNode( WrapPanel parent, string title, string text, string date, int id )
+        public class AddToDoNode
         {
-            Border newNode = new Border();
-            newNode.Style = (Style)Resources["ThingToDoBorder"];
+            Border Container { get; set; }
+            ResourceDictionary Resources { get; set; }
+            public AddToDoNode(ResourceDictionary resources, WrapPanel mainPanel)
+            {
+                Resources = resources;
+                Container = new()
+                {
+                    Style = (Style)resources["ThingToDoBorder"],
+                    BorderBrush = new SolidColorBrush(Colors.DarkGray),
+                    Name = "addNode"
+                };
 
-            parent.Children.Add(newNode);
+                mainPanel.Children.Add(Container);
 
-            Grid newGrid = new Grid();
-            newGrid.Style = (Style)Resources["ThingToDoGrid"];
+                Grid AddTaskGrid = new()
+                {
+                    Style = (Style)resources["ThingToDoGrid"]
+                };
 
-            newNode.Child = newGrid; 
+                Container.Child = AddTaskGrid;
 
-            RowDefinition firstRowDefinition = new RowDefinition();
-            firstRowDefinition.Height = new GridLength(3, GridUnitType.Star);
+                Button addTask = new()
+                {
+                    Style = (Style)resources["PlusButton"]
+                };
+                addTask.Click += AddTask;
 
-            RowDefinition secondRowDefinition = new RowDefinition();
-            secondRowDefinition.Height = new GridLength(4, GridUnitType.Star);
+                AddTaskGrid.Children.Add(addTask);
+            }
 
-            RowDefinition thirdRowDefinition = new RowDefinition();
-            thirdRowDefinition.Height = new GridLength(13, GridUnitType.Star);
+            private void AddTask(object sender, RoutedEventArgs e)
+            {
 
-            newGrid.RowDefinitions.Add(firstRowDefinition);
-            newGrid.RowDefinitions.Add(secondRowDefinition);
-            newGrid.RowDefinitions.Add(thirdRowDefinition);
+                ((Grid)Container.Child).Children.Clear();
 
-            TextBlock dateBlock = new TextBlock();
-            Grid.SetRow(dateBlock, 0);
-            dateBlock.Text = "Do unti: " + date;
-            dateBlock.FontSize = 12;
-            dateBlock.FontWeight = FontWeights.Bold;
-            dateBlock.TextAlignment = TextAlignment.Right;
+                ((Grid)Container.Child).RowDefinitions.Add(new RowDefinition()
+                {
+                    Height = new GridLength(3, GridUnitType.Star)
+                });
 
-            newGrid.Children.Add(dateBlock);
+                ((Grid)Container.Child).RowDefinitions.Add(new RowDefinition()
+                {
+                    Height = new GridLength(12, GridUnitType.Star)
+                });
+
+                ((Grid)Container.Child).RowDefinitions.Add(new RowDefinition()
+                {
+                    Height = new GridLength(3, GridUnitType.Star)
+                });
+
+                ((Grid)Container.Child).RowDefinitions.Add(new RowDefinition()
+                {
+                    Height = new GridLength(2, GridUnitType.Star)
+                });
+
+                Border title = new()
+                {
+                    Style = (Style)Resources["InputBorder"],
+                    Child = new TextBox
+                    {
+                        FontSize = 20,
+                        FontWeight = FontWeights.Bold,
+                        TextAlignment = TextAlignment.Center
+                    }
+                };
+                Grid.SetRow(title, 0);
+
+                Border text = new()
+                {
+                    Style = (Style)Resources["InputBorder"],
+                    Child = new TextBox
+                    {
+                        FontSize = 20,
+                        TextWrapping = TextWrapping.Wrap,
+                        TextAlignment = TextAlignment.Center
+                    }
+                };
+                Grid.SetRow(text, 1);
+
+                DatePicker datePicker = new() {
+                    Margin = new Thickness(4)
+                };
+                Grid.SetRow(datePicker, 2);
+
+                Button cancelButton = new()
+                {
+                    Content = "Cancel",
+                    Margin = new Thickness(4)
+                };
+
+                Grid.SetColumn(cancelButton, 0);
+                cancelButton.Click += CanceleAdd;
+
+                Button saveButton = new();
+                Grid.SetColumn(saveButton, 1);
+                saveButton.Content = "Save";
+                saveButton.Margin = new Thickness(4);
+                saveButton.Click += (object sender, RoutedEventArgs e) => {
+                    string saveTitle = ((TextBox)title.Child).Text;
+                    string saveText = ((TextBox)text.Child).Text;
+                    string saveDate = datePicker.Text;
+
+                    TodoObject saveObject = new(title: saveTitle, text: saveText, date: saveDate);
+
+                    string storageFile = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\ToDoApp\\storage.json";
+                    string fileText = File.ReadAllText(storageFile);
+                    TodoObject[]? toDo = JsonSerializer.Deserialize<TodoObject[]>(fileText);
+
+                    if (toDo == null) return;
+                    int id = toDo.Length;
+
+                    toDo = [.. toDo, saveObject];
+
+                    File.WriteAllText(storageFile, JsonSerializer.Serialize(toDo));
+
+                    new ToDoNode().CreateANode((WrapPanel)Container.Parent, id, saveTitle, saveText, saveDate, Resources);
+                    _ = new AddToDoNode(Resources, (WrapPanel)Container.Parent);
+                    ((WrapPanel)Container.Parent).Children.Remove(Container);
+                };
+
+                Grid buttons = new()
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition(){ Width = new GridLength(1, GridUnitType.Star) },
+                        new ColumnDefinition(){ Width = new GridLength(1, GridUnitType.Star) }
+                    },
+                    Children =
+                    {
+                        cancelButton,
+                        saveButton
+                    }
+                };
+                Grid.SetRow(buttons, 3);
+
+                ((Grid)Container.Child).Children.Add(title);
+                ((Grid)Container.Child).Children.Add(text);
+                ((Grid)Container.Child).Children.Add(datePicker);
+                ((Grid)Container.Child).Children.Add(buttons);
+            }
+
+            public void CanceleAdd(object sender, EventArgs e)
+            {
+                ((Grid)Container.Child).Children.Clear();
+                ((Grid)Container.Child).RowDefinitions.Clear();
+
+                Button addTask = new()
+                {
+                    Style = (Style)Resources["PlusButton"]
+                };
+                addTask.Click += AddTask;
+
+                ((Grid)Container.Child).Children.Add(addTask);
+            }
+        }
+
+        private void PickAnApp(object sender, RoutedEventArgs e)
+        {
+
+            TextBlock titleBlock = (TextBlock)FindName("AppTitle");
+            Grid appContainer = (Grid)FindName("ThingsToDoPanel");
+            appContainer.Children.Clear();
 
 
-            Button delete = new Button();
-            Grid.SetRow(delete, 0);
-            delete.Name = "id" + id.ToString();
-            delete.HorizontalAlignment = HorizontalAlignment.Left;
-            delete.Style = (Style)Resources["XButton"];
-            delete.Click += DeleteNode;
+            switch (((Button)sender).Name.ToString())
+            {
+                case "ToDoList":
 
-            newGrid.Children.Add(delete);
+                    WrapPanel mainPanel = new()
+                    {
+                        Name = "main"
+                    };
+                    appContainer.Children.Add(mainPanel);
 
-            TextBlock titleBlock = new TextBlock();
-            Grid.SetRow(titleBlock, 1);
-            titleBlock.Text = title;
-            titleBlock.FontSize = 20;
-            titleBlock.FontWeight = FontWeights.Heavy;
-            titleBlock.TextAlignment = TextAlignment.Center;
+                    titleBlock.Text = "To do list";
 
-            newGrid.Children.Add(titleBlock);
+                    string storageFile = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\ToDoApp\\storage.json";
+                    string fileText = File.ReadAllText(storageFile);
 
-            TextBlock textBlock = new TextBlock();
-            Grid.SetRow(textBlock, 2);
-            textBlock.Text = text;
-            textBlock.FontSize = 20;
-            textBlock.TextAlignment = TextAlignment.Center;
+                    TodoObject[]? toDo = JsonSerializer.Deserialize<TodoObject[]>(fileText);
 
-            newGrid.Children.Add(textBlock);
+                    if (toDo == null) {
+                        _ = new AddToDoNode(Resources, mainPanel);
+                        break;
+                    };
+
+                    for (int i = 0; i < toDo.Length; i++)
+                    {
+                        new ToDoNode().CreateANode(mainPanel, i, toDo[i].Title, toDo[i].Text, toDo[i].Date, Resources);
+                    }
+
+                    _ = new AddToDoNode(Resources, mainPanel);
+                    break;
+                case "AppsThatRun":
+
+                    WrapPanel mainPanel2 = new()
+                    {
+                        Name = "main"
+                    };
+                    appContainer.Children.Add(mainPanel2);
+
+                    Process[] processes = Process.GetProcesses();
+
+                    foreach (Process process in processes)
+                    {
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(process.MainWindowTitle))
+                            {
+                                if (!FileVersionInfo.GetVersionInfo(process.MainModule.FileName).ProductName.Contains("Operating System")
+                                    && !FileVersionInfo.GetVersionInfo(process.MainModule.FileName).ProductName.Contains("System operacyjny")
+                                )
+                                {
+                                    mainPanel2.Children.Add(new Border()
+                                    {
+                                        BorderBrush = new SolidColorBrush(Color.FromRgb(50, 150, 50)),
+                                        BorderThickness = new Thickness(10),
+                                        CornerRadius = new CornerRadius(10),
+                                        Margin = new Thickness(20),
+                                        Child = new TextBlock()
+                                        {
+                                            // Text = process.,
+                                            Text = FileVersionInfo.GetVersionInfo(process.MainModule.FileName).ProductName,
+                                            Margin = new Thickness(20),
+                                            FontSize = 20
+                                        }
+                                    });
+                                }
+                            }
+                        }catch { };
+                    }
+                    break;
+                default:
+                    titleBlock.Text = "Jeszcze Nie dodaliśmy tej aplikacji";
+                    break;
+            }
+
         }
     }
 }
